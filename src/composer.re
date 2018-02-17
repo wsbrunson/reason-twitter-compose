@@ -1,29 +1,58 @@
+[%bs.raw {|require('./composer.css')|}];
+
 type action =
   | UpdateText(string);
 
-type state = {composerValue: string};
-
-let valueFromEvent = evt : string => ReactDOMRe.domElementToObj(
-                                       ReactEventRe.Form.target(evt)
-                                     )##value;
+type state = {
+  composerValue: string,
+  mention: option(string)
+};
 
 let component = ReasonReact.reducerComponent("Composer");
 
 let make = _children => {
   ...component,
-  initialState: () => {composerValue: ""},
+  initialState: () => {composerValue: "", mention: None},
   reducer: (action, _state) =>
     switch action {
-    | UpdateText(text) => ReasonReact.Update({composerValue: text})
+    | UpdateText(text) =>
+      let mention =
+        Js.String.match([%re "/\\B@[a-zA-Z0-9_]{1,15}\\b/g"], text)
+        |> (
+          fun
+          | Some(arrayOfMentions) =>
+            Some(arrayOfMentions[Array.length(arrayOfMentions) - 1])
+          | None => None
+        );
+      ReasonReact.Update({composerValue: text, mention});
     },
-  render: ({state, reduce}) =>
+  render: ({state: {composerValue, mention}, send}) =>
     <div>
-      <p>
-        (ReasonReact.stringToElement("Inputed Text:" ++ state.composerValue))
+      <p className="Composer-title">
+        (
+          ReasonReact.stringToElement(
+            "Current Mention: "
+            ++ (
+              switch mention {
+              | None => "None"
+              | Some(mentionText) => mentionText
+              }
+            )
+          )
+        )
       </p>
       <textarea
-        value=state.composerValue
-        onChange=(reduce(event => UpdateText(valueFromEvent(event))))
+        className="Composer-textarea"
+        placeholder="What's happening?"
+        value=composerValue
+        onChange=(
+          event =>
+            send(
+              UpdateText(
+                ReactDOMRe.domElementToObj(ReactEventRe.Form.target(event))##value
+              )
+            )
+        )
       />
     </div>
 };

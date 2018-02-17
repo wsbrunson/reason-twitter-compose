@@ -1,0 +1,16 @@
+.Composer-title {
+  font-family: monospace;
+  font-size: 1.5rem;
+}
+.Composer-textarea {
+  border-radius: 0.5rem;
+  border: #db4d3f solid 0.2rem;
+  font-size: 1rem;
+  font-family: monospace;
+  padding: 0.5rem;
+  outline: none;
+  resize: none;
+  height: 5rem;
+  width: 20rem;
+}
+
